@@ -1,6 +1,8 @@
+
+// eslint-disable-next-line import/no-unresolved
+import 'bootstrap/dist/css/bootstrap.min.css'
 import React from 'react'
 import Board from './Board'
-import 'bootstrap/dist/css/bootstrap.min.css';
 
 class Game extends React.Component {
     constructor(props) {
@@ -19,6 +21,7 @@ class Game extends React.Component {
             moveChoose: -1,
         };
     }
+
     handlePlayAgain = () => {
         this.setState({
             history: [{
@@ -33,24 +36,29 @@ class Game extends React.Component {
             moveChoose: -1,
         });
     };
+
     handleSortMove = () => {
+        const { sortMovesAsc } = this.state;
         this.setState({
-            sortMovesAsc: !this.state.sortMovesAsc
+            sortMovesAsc: !sortMovesAsc
         });
     };
+
     handleClick(i) {
-        const history = this.state.history.slice(0, this.state.stepNumber + 1);
+        const { winner, xIsNext, stepNumber } = this.state;
+        let { history } = this.state;
+        history = history.slice(0, stepNumber + 1);
         const current = history[history.length - 1];
         const squares = current.squares.slice();
-        if (squares[i] || this.state.winner) {
+        if (squares[i] || winner) {
             return;
         }
-        squares[i] = this.state.xIsNext ? 'X' : 'O';
-        let checkWin = this.calculateWinner(squares, i);
+        squares[i] = xIsNext ? 'X' : 'O';
+        const checkWin = this.calculateWinner(squares, i);
         if (checkWin) {
             this.setState({
                 history: history.concat([{
-                    squares: squares,
+                    squares,
                     type: squares[i],
                     pos: i
                 }]),
@@ -63,24 +71,27 @@ class Game extends React.Component {
         }
         this.setState({
             history: history.concat([{
-                squares: squares,
+                squares,
                 type: squares[i],
                 pos: i
             }]),
             stepNumber: history.length,
-            xIsNext: !this.state.xIsNext,
+            xIsNext: !xIsNext,
             wasWin: null,
             moveChoose: -1,
         });
     }
+
     jumpTo(step) {
+        const { wasWin, history } = this.state;
         this.setState({
             stepNumber: step,
             xIsNext: (step % 2) === 0,
-            winner: (this.state.wasWin && step === this.state.history.length - 1) ? this.state.wasWin : null,
+            winner: (wasWin && step === history.length - 1) ? wasWin : null,
             moveChoose: step
         });
     }
+
     calculateWinner(squares, lastNode) {
         return (
             this.checkNgang(squares, lastNode) ||
@@ -89,17 +100,19 @@ class Game extends React.Component {
             this.checkCheoPhu(squares, lastNode)
         );
     }
+
+    // eslint-disable-next-line class-methods-use-this
     checkNgang(squares, lastNode) {
-        const hang = parseInt(lastNode / 20);
+        const hang = parseInt(lastNode / 20, 10);
         const cot = lastNode % 20;
         let count = 0;
         let chanTrai = false;
         let chanPhai = false;
         const posWin = [lastNode];
-        //check Trái
-        for (let i = cot - 1; i >= 0; i--) {
+        // check Trái
+        for (let i = cot - 1; i >= 0; i -= 1) {
             if (squares[hang * 20 + i] === squares[lastNode]) {
-                count++;
+                count += 1;
                 posWin.push(hang * 20 + i);
             } else if (squares[hang * 20 + i] !== null) {
                 chanTrai = true;
@@ -108,10 +121,11 @@ class Game extends React.Component {
                 break;
             }
         }
-        //check Phải
-        for (let i = cot + 1; i <= 19; i++) {
+
+        // check Phải
+        for (let i = cot + 1; i <= 19; i += 1) {
             if (squares[hang * 20 + i] === squares[lastNode]) {
-                count++;
+                count += 1;
                 posWin.push(hang * 20 + i);
             } else if (squares[hang * 20 + i] !== null) {
                 chanPhai = true;
@@ -128,17 +142,19 @@ class Game extends React.Component {
         }
         return null;
     }
+
+    // eslint-disable-next-line class-methods-use-this
     checkDoc(squares, lastNode) {
-        const hang = parseInt(lastNode / 20);
+        const hang = parseInt(lastNode / 20, 10);
         const cot = lastNode % 20;
         let count = 0;
         let chanTren = false;
-        let chanDuoi = false;
+        const chanDuoi = false;
         const posWin = [lastNode];
-        //check Trên
-        for (let i = hang + 1; i <= 19; i++) {
+        // check Trên
+        for (let i = hang + 1; i <= 19; i += 1) {
             if (squares[i * 20 + cot] === squares[lastNode]) {
-                count++;
+                count += 1;
                 posWin.push(i * 20 + cot);
             } else if (squares[i * 20 + cot] !== null) {
                 chanTren = true;
@@ -147,10 +163,10 @@ class Game extends React.Component {
                 break;
             }
         }
-        //check Dưới
-        for (let i = hang - 1; i >= 0; i--) {
+        // check Dưới
+        for (let i = hang - 1; i >= 0; i -= 1) {
             if (squares[i * 20 + cot] === squares[lastNode]) {
-                count++;
+                count += 1;
                 posWin.push(i * 20 + cot);
             } else if (squares[i * 20 + cot] !== null) {
                 chanTren = true;
@@ -167,18 +183,20 @@ class Game extends React.Component {
         }
         return null;
     }
+
+    // eslint-disable-next-line class-methods-use-this
     checkCheoChinh(squares, lastNode) {
-        const hang = parseInt(lastNode / 20);
+        const hang = parseInt(lastNode / 20, 10);
         let cot = lastNode % 20;
         let count = 0;
         let chanTren = false;
         let chanDuoi = false;
         const posWin = [lastNode];
-        //check dưới
-        for (let temp = hang - 1; temp >= 0; temp--) {
-            cot--;
+        // check dưới
+        for (let temp = hang - 1; temp >= 0; temp -= 1) {
+            cot -= 1;
             if (squares[temp * 20 + cot] === squares[lastNode]) {
-                count++;
+                count += 1;
                 posWin.push(temp * 20 + cot);
             } else if (squares[temp * 20 + cot] !== null) {
                 chanDuoi = true;
@@ -190,11 +208,11 @@ class Game extends React.Component {
             }
         }
 
-        //check trên
-        for (let temp = hang + 1; temp <= 20; temp++) {
-            cot++;
+        // check trên
+        for (let temp = hang + 1; temp <= 20; temp += 1) {
+            cot += 1;
             if (squares[temp * 20 + cot] === squares[lastNode]) {
-                count++;
+                count += 1;
                 posWin.push(temp * 20 + cot);
             } else if (squares[temp * 20 + cot] != null) {
                 chanTren = true;
@@ -214,18 +232,20 @@ class Game extends React.Component {
         }
         return null;
     }
+
+    // eslint-disable-next-line class-methods-use-this
     checkCheoPhu(squares, lastNode) {
-        const hang = parseInt(lastNode / 20);
+        const hang = parseInt(lastNode / 20, 10);
         let cot = lastNode % 20;
         let count = 0;
         let chanTren = false;
         let chanDuoi = false;
         const posWin = [lastNode];
-        //check dưới
-        for (let temp = hang - 1; temp >= 0; temp--) {
-            cot++;
+        // check dưới
+        for (let temp = hang - 1; temp >= 0; temp -= 1) {
+            cot += 1;
             if (squares[temp * 20 + cot] === squares[lastNode]) {
-                count++;
+                count += 1;
                 posWin.push(temp * 20 + cot);
             } else if (squares[temp * 20 + cot] != null) {
                 chanDuoi = true;
@@ -236,12 +256,11 @@ class Game extends React.Component {
                 break;
             }
         }
-
-        //check trên
-        for (let temp = hang + 1; temp <= 20; temp++) {
-            cot--;
+        // check trên
+        for (let temp = hang + 1; temp <= 20; temp += 1) {
+            cot -= 1;
             if (squares[temp * 20 + cot] === squares[lastNode]) {
-                count++;
+                count += 1;
                 posWin.push(temp * 20 + cot);
             } else if (squares[temp * 20 + cot] != null) {
                 chanTren = true;
@@ -252,7 +271,6 @@ class Game extends React.Component {
                 break;
             }
         }
-
         if (count >= 4 && (!chanTren || !chanDuoi)) {
             return {
                 winner: squares[lastNode],
@@ -261,25 +279,26 @@ class Game extends React.Component {
         }
         return null;
     }
+
     render() {
-        const history = this.state.history;
-        const current = history[this.state.stepNumber];
+        const { history, stepNumber, winner, xIsNext, moveChoose, sortMovesAsc } = this.state;
+        const current = history[stepNumber];
         let status;
-        if (this.state.winner) {
-            status = `Player ${this.state.winner.winner} Winnnnnnnnn, Click play again to continues `;
+        if (winner) {
+            status = `Player ${winner.winner} Winnnnnnnnn, Click play again to continues `;
         } else {
-            status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
+            status = `Next player: ${xIsNext ? 'X' : 'O'}`;
         }
-        const moves = this.state.history.map((move, idx) => {
-            let desc = idx ? `go to move ${idx} -- ${move.type} check in (${Math.floor(move.pos / 20) + 1}, ${move.pos % 20 + 1}) ` : 'go to game start';
-            let fontWeight = this.state.moveChoose === idx ? "bold" : "normal"
+        const moves = history.map((move, idx) => {
+            const desc = idx ? `go to move ${idx} -- ${move.type} check in (${Math.floor(move.pos / 20) + 1}, ${move.pos % 20 + 1}) ` : 'go to game start';
+            const fontWeight = moveChoose === idx ? "bold" : "normal"
             return (
                 <li>
-                    <button style={{ fontWeight: fontWeight }} onClick={() => this.jumpTo(idx)} className="btn btn-outline-success">{desc}</button>
+                    <button type="button" style={{ fontWeight }} onClick={() => this.jumpTo(idx)} className="btn btn-outline-success">{desc}</button>
                 </li>
             )
         })
-        if (!this.state.sortMovesAsc) {
+        if (!sortMovesAsc) {
             moves.reverse();
         }
 
@@ -290,16 +309,16 @@ class Game extends React.Component {
                     <div>Phát triển ứng dụng web nâng cao</div>
                 </div>
                 <div className="game-board">
-                    <Board squares={current.squares} posWin={this.state.winner ? this.state.winner.posWin : null}
+                    <Board squares={current.squares} posWin={winner ? winner.posWin : null}
                         onClick={(i) => this.handleClick(i)} />
                 </div>
                 <div className="game-info">
                     <div>{status}</div>
-                    <button className="btn btn-primary" onClick={this.handleSortMove}>
+                    <button type="button" className="btn btn-primary" onClick={this.handleSortMove}>
                         Sort Moves
                     </button>
                     <ol >{moves}</ol>
-                    <button className="btn btn-danger" onClick={this.handlePlayAgain}>
+                    <button type="button" className="btn btn-danger" onClick={this.handlePlayAgain}>
                         Play Again
                 </button>
                 </div>
